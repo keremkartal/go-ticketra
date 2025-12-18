@@ -9,9 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ConnectToPostgres, verilen config ile veritabanına bağlanır ve *gorm.DB döner.
 func ConnectToPostgres(cfg config.Config) *gorm.DB {
-	// DSN (Data Source Name): Bağlantı cümlesi
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Istanbul",
 		cfg.DBHost,
 		cfg.DBUser,
@@ -25,6 +23,6 @@ func ConnectToPostgres(cfg config.Config) *gorm.DB {
 		log.Fatalf("Veritabanına bağlanılamadı: %v", err)
 	}
 
-	fmt.Println("✅ PostgreSQL bağlantısı başarılı!")
+	fmt.Println(" PostgreSQL bağlantısı başarılı!")
 	return db
 }

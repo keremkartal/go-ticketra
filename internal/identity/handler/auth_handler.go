@@ -13,7 +13,6 @@ func NewAuthHandler(service service.AuthService) *AuthHandler {
 	return &AuthHandler{service: service}
 }
 
-// Request modelleri (Gelen JSON verisini karşılamak için)
 type RegisterRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -24,7 +23,6 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-// Register Endpoint
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -39,7 +37,6 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	return c.Status(201).JSON(fiber.Map{"message": msg})
 }
 
-// Login Endpoint
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req LoginRequest
 	if err := c.BodyParser(&req); err != nil {

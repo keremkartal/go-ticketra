@@ -7,7 +7,8 @@ import (
 type Config struct {
 	AppEnv     string `mapstructure:"APP_ENV"`
 	ServerPort string `mapstructure:"SERVER_PORT"`
-
+	EventPort string `mapstructure:"EVENT_SERVER_PORT"`
+	
 	// Postgres Settings
 	DBUser     string `mapstructure:"POSTGRES_USER"`
 	DBPassword string `mapstructure:"POSTGRES_PASSWORD"`
