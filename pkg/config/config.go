@@ -6,7 +6,7 @@ import (
 
 type Config struct {
 	AppEnv     string `mapstructure:"APP_ENV"`
-	ServerPort string `mapstructure:"SERVER_PORT"`
+	IdentityPort string `mapstructure:"IDENTITY_SERVER_PORT"`
 	EventPort string `mapstructure:"EVENT_SERVER_PORT"`
 	
 	// Postgres Settings
@@ -37,6 +37,11 @@ type Config struct {
 	// JWT Settings
 	JWTSecret     string `mapstructure:"JWT_SECRET"`
 	JWTExpiration int    `mapstructure:"JWT_EXPIRATION_HOURS"`
+
+    // Gateway Settings
+	GatewayPort       string `mapstructure:"GATEWAY_PORT"`
+    IdentityServiceURL string `mapstructure:"IDENTITY_SERVICE_URL"`
+    EventServiceURL    string `mapstructure:"EVENT_SERVICE_URL"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

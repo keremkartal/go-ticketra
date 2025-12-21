@@ -32,6 +32,6 @@ func main() {
 	api.Post("/register", authHandler.Register)
 	api.Post("/login", authHandler.Login)
 
-	log.Printf("Identity Service %s portunda çalisiyor...", cfg.ServerPort)
-	log.Fatal(app.Listen(cfg.ServerPort))
+	log.Printf("Identity Service %s portunda çalisiyor...", cfg.IdentityPort)
+	log.Fatal(app.Listen(cfg.IdentityPort))
 }
