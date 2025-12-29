@@ -5,6 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/proxy"
+	"github.com/keremkartal/goticketra/cmd/api-gateway/client"  
+	"github.com/keremkartal/goticketra/cmd/api-gateway/handler"
 	"github.com/keremkartal/goticketra/pkg/config"
 )
 
@@ -16,27 +18,21 @@ func main() {
 
 	app := fiber.New()
 
+	bookingClient := client.InitBookingServiceClient(cfg)
+	bookingHandler := handler.NewBookingHandler(bookingClient)
+
+
 	app.Group("/api/auth", func(c *fiber.Ctx) error {
 		targetURL := cfg.IdentityServiceURL + c.OriginalURL()
-		
-		if err := proxy.Do(c, targetURL); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Identity servisine ulaşılamıyor: " + err.Error(),
-			})
-		}
-		return nil
+		return proxy.Do(c, targetURL)
 	})
 
 	app.Group("/api/events", func(c *fiber.Ctx) error {
 		targetURL := cfg.EventServiceURL + c.OriginalURL()
-		
-		if err := proxy.Do(c, targetURL); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Event servisine ulaşılamıyor: " + err.Error(),
-			})
-		}
-		return nil
+		return proxy.Do(c, targetURL)
 	})
+
+	app.Post("/api/bookings", bookingHandler.CreateBooking)
 
 	log.Printf("🚀 API Gateway %s portunda çalışıyor...", cfg.GatewayPort)
 	log.Fatal(app.Listen(cfg.GatewayPort))

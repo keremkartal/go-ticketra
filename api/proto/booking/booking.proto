@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package booking;
+
+// Go kodlarının nereye çıkacağını belirtiyoruz.
+// "github.com/keremkartal/goticketra/api/proto/booking" paketi altına çıkacak.
+option go_package = "github.com/keremkartal/goticketra/api/proto/booking";
+
+// Servis Tanımı (Interface gibi düşünebilirsin)
+service BookingService {
+    // Bilet oluşturma fonksiyonu
+    rpc CreateBooking (CreateBookingRequest) returns (CreateBookingResponse);
+}
+
+// İstek Modeli (Request)
+message CreateBookingRequest {
+    string user_id = 1;      // Kim alıyor?
+    string event_id = 2;     // Hangi etkinlik?
+    int32 ticket_count = 3;  // Kaç bilet?
+}
+
+// Cevap Modeli (Response)
+message CreateBookingResponse {
+    string booking_id = 1;   // Oluşan rezervasyon ID'si
+    string status = 2;       // Durum (SUCCESS, FAILED)
+    string error_message = 3;// Hata varsa detayı
+}

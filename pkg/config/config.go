@@ -8,7 +8,7 @@ type Config struct {
 	AppEnv     string `mapstructure:"APP_ENV"`
 	IdentityPort string `mapstructure:"IDENTITY_SERVER_PORT"`
 	EventPort string `mapstructure:"EVENT_SERVER_PORT"`
-	
+	BookingPort string `mapstructure:"BOOKING_SERVICE_PORT"`
 	// Postgres Settings
 	DBUser     string `mapstructure:"POSTGRES_USER"`
 	DBPassword string `mapstructure:"POSTGRES_PASSWORD"`
