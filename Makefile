@@ -13,13 +13,16 @@ run-all:
 	@go run cmd/identity/main.go & 
 	@go run cmd/event/main.go & 
 	@go run cmd/api-gateway/main.go &
+	@go run cmd/payment/main.go &      
 	@echo "Servisler arka planda çalışıyor. Durdurmak için: 'make stop-all'"
+
 
 stop-all:
 	@echo "Servisler durduruluyor..."
 	@pkill -f "go run cmd/identity/main.go" || true
 	@pkill -f "go run cmd/event/main.go" || true
 	@pkill -f "go run cmd/api-gateway/main.go" || true
+	@pkill -f "go run cmd/payment/main.go" || true 
 	@echo "Tüm servisler durduruldu."
 
 run-identity:
@@ -33,7 +36,8 @@ run-event:
 run-gateway:
 	@echo "API Gateway başlatılıyor..."
 	go run cmd/api-gateway/main.go
-
+run-payment:
+	go run cmd/payment/main.go
 
 proto:
 	@echo "Protobuf dosyaları derleniyor..."

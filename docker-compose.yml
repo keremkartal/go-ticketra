@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-  # --- PostgreSQL ---
   postgres:
     image: postgres:15-alpine
     container_name: ticketra-postgres
@@ -15,8 +12,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - ticketra-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticketra_user -d ticketra_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # --- MongoDB ---
   mongo:
     image: mongo:6.0
     container_name: ticketra-mongo
@@ -31,7 +32,6 @@ services:
     networks:
       - ticketra-network
 
-  # --- Redis ---
   redis:
     image: redis:7-alpine
     container_name: ticketra-redis
@@ -42,7 +42,6 @@ services:
     networks:
       - ticketra-network
 
-  # --- RabbitMQ ---
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: ticketra-rabbitmq
@@ -54,8 +53,104 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     networks:
       - ticketra-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # --- PGAdmin (Postgres Arayüzü) ---
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: ./cmd/identity/main.go
+    container_name: ticketra-identity
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_HOST: postgres
+    networks:
+      - ticketra-network
+
+  event-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: ./cmd/event/main.go
+    container_name: ticketra-event
+    depends_on:
+      - mongo
+    ports:
+      - "8082:8082"
+    environment:
+      MONGO_HOST: mongo
+    networks:
+      - ticketra-network
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: ./cmd/booking/main.go
+    container_name: ticketra-booking
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "50051:50051"
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    networks:
+      - ticketra-network
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: ./cmd/payment/main.go
+    container_name: ticketra-payment
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: rabbitmq
+    networks:
+      - ticketra-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: ./cmd/api-gateway/main.go
+    container_name: ticketra-gateway
+    depends_on:
+      - identity-service
+      - event-service
+      - booking-service
+    ports:
+      - "3000:3000"
+    environment:
+      IDENTITY_SERVICE_URL: http://identity-service:8080
+      EVENT_SERVICE_URL: http://event-service:8082
+      BOOKING_SERVICE_PORT: booking-service:50051
+    networks:
+      - ticketra-network
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: ticketra-pgadmin
@@ -64,12 +159,9 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - "5050:80"
-    depends_on:
-      - postgres
     networks:
       - ticketra-network
 
-  # --- Mongo Express (Mongo Arayüzü) ---
   mongo-express:
     image: mongo-express
     container_name: ticketra-mongo-express
@@ -80,8 +172,6 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/
-    depends_on:
-      - mongo
     networks:
       - ticketra-network
 

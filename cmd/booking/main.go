@@ -22,18 +22,21 @@ func main() {
 
 	db := database.ConnectToPostgres(cfg)
 	rdb := database.ConnectToRedis(cfg)
+	rabbitConn := database.ConnectToRabbitMQ(cfg) 
+	defer rabbitConn.Close()
 
 	db.AutoMigrate(&domain.Booking{})
 
 	bookingRepo := repository.NewBookingRepository(db)
 	redisRepo := repository.NewRedisRepository(rdb)
-	
-	bookingService := service.NewBookingService(bookingRepo, redisRepo)
+	rabbitRepo := repository.NewRabbitMQRepository(rabbitConn) 
+
+	bookingService := service.NewBookingService(bookingRepo, redisRepo, rabbitRepo)
 	grpcHandler := handler.NewGrpcHandler(bookingService)
 
 	port := cfg.BookingPort
 	if port == "" {
-		port = ":50051" 
+		port = ":50051"
 	}
 	
 	lis, err := net.Listen("tcp", port)
@@ -42,7 +45,6 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	
 	pb.RegisterBookingServiceServer(grpcServer, grpcHandler)
 
 	log.Printf(" Booking Service (gRPC) %s portunda çalışıyor...", port)

@@ -9,6 +9,7 @@ type Config struct {
 	IdentityPort string `mapstructure:"IDENTITY_SERVER_PORT"`
 	EventPort string `mapstructure:"EVENT_SERVER_PORT"`
 	BookingPort string `mapstructure:"BOOKING_SERVICE_PORT"`
+	BookingServiceURL string `mapstructure:"BOOKING_SERVICE_URL"`
 	// Postgres Settings
 	DBUser     string `mapstructure:"POSTGRES_USER"`
 	DBPassword string `mapstructure:"POSTGRES_PASSWORD"`
